@@ -50,9 +50,16 @@ public class ObservableCollector {
     }
 
     public static Observable<Map<User, Map<Task, Boolean>>> processTasks(List<Task> tasks, boolean useDelays) {
-        Observable<Task> observable = Observable.zip(Observable.fromIterable(tasks), Observable.interval(100, TimeUnit.NANOSECONDS),
-                (i, _) -> i);
-        return  observable
+        Observable<Task> observable;
+
+        if (useDelays) {
+            observable = Observable.zip(Observable.fromIterable(tasks), Observable.interval(100, TimeUnit.NANOSECONDS),
+                    (i, _) -> i);
+        } else {
+            observable = Observable.fromIterable(tasks);
+        }
+
+        return observable
                 .observeOn(Schedulers.computation())
                 .groupBy(Task::getUser)
                 .flatMapSingle(groupedObservable ->
